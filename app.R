@@ -21,7 +21,7 @@ ui <- navbarPage(
         inputId='select_data_level_tab1',
         label=h4(strong('Select a level:')),#,
         choices=c('Ward','Municipality','Province'),
-        selected='Municipal',
+        selected='Municipality',
         inline=F
       )
     ),
@@ -119,20 +119,20 @@ server <- function(input,output,session) {
         v$msg7 <- input$map1_topojson_mouseover$properties$MUNICNAME
       })
       
-#       observeEvent(input$map1_topojson_mouseover, label = "ward_proxymap_event",{
-#         if (!is.null(input$map1_zoom) & v$msg5 >= 9) {
-#           proxy1 <- leafletProxy(
-#             "map1", data = subset(ward_tj_spd, ward_tj_spd@data$WARD == v$msg1)
-#             )
-#             single_data <- subset(ward_tj_spd@data, ward_tj_spd@data$WARD == v$msg1)
-#             proxy1 %>%
-#               clearShapes() %>%
-#               addPolygons(
-#                 stroke=T,weight=3,color="#555555",opacity=1,
-#                 smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
-#               )
-#         }
-#       })
+      observeEvent(input$map1_topojson_mouseover, label = "ward_proxymap_event",{
+        if (!is.null(input$map1_zoom) & v$msg5 >= 9) {
+          proxy1 <- leafletProxy(
+            "map1", data = subset(ward_tj_spd, ward_tj_spd@data$WARD == v$msg1)
+            )
+            single_data <- subset(ward_tj_spd@data, ward_tj_spd@data$WARD == v$msg1)
+            proxy1 %>%
+              clearShapes() %>%
+              addPolygons(
+                stroke=T,weight=3,color="#555555",opacity=1,
+                smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
+              )
+        }
+      })
       
       
        observeEvent(input$map1_shape_mouseout, {
@@ -227,17 +227,17 @@ server <- function(input,output,session) {
             v$msg2 <- input$map1_topojson_mouseover$properties$DENSITY
          })
          
-#          observeEvent(input$map1_topojson_mouseover, label = "town_proxymap_event", {
-#            proxy1 <- leafletProxy(
-#               "map1", data = subset(town_tj_spd, town_tj_spd@data$MUNICNAME == v$msg1)
-#             )
-#             single_data <- subset(town_tj_spd@data, town_tj_spd@data$MUNICNAME == v$msg1)
-#             proxy1 %>%
-#               clearShapes() %>%
-#               addPolygons(stroke=T,weight=3,color="#555555",opacity=1,
-#                           smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
-#               )
-#           })
+         observeEvent(input$map1_topojson_mouseover, label = "town_proxymap_event", {
+           proxy1 <- leafletProxy(
+              "map1", data = subset(town_tj_spd, town_tj_spd@data$MUNICNAME == v$msg1)
+            )
+            single_data <- subset(town_tj_spd@data, town_tj_spd@data$MUNICNAME == v$msg1)
+            proxy1 %>%
+              clearShapes() %>%
+              addPolygons(stroke=T,weight=3,color="#555555",opacity=1,
+                          smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
+              )
+          })
          
       observeEvent(input$map1_shape_mouseout, {
         proxy <- leafletProxy(mapId = 'map1')
@@ -323,17 +323,17 @@ server <- function(input,output,session) {
         v$msg2 <- input$map1_topojson_mouseover$properties$DENSITY
       })
       
-#       observeEvent(input$map1_topojson_mouseover, label = "province_proxymap_event",{ 
-#         proxy1 <- leafletProxy(
-#           "map1", data = subset(province_tj_spd, province_tj_spd@data$PROVINCE == v$msg1)
-#         )
-#         single_data <- subset(province_tj_spd@data, province_tj_spd@data$PROVINCE == v$msg1)
-#         proxy1 %>%
-#           clearShapes() %>%
-#           addPolygons(stroke=T,weight=3,color="#555555",opacity=1,
-#                       smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
-#           )
-#       })
+      observeEvent(input$map1_topojson_mouseover, label = "province_proxymap_event",{ 
+        proxy1 <- leafletProxy(
+          "map1", data = subset(province_tj_spd, province_tj_spd@data$PROVINCE == v$msg1)
+        )
+        single_data <- subset(province_tj_spd@data, province_tj_spd@data$PROVINCE == v$msg1)
+        proxy1 %>%
+          clearShapes() %>%
+          addPolygons(stroke=T,weight=3,color="#555555",opacity=1,
+                      smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
+          )
+      })
      
       observeEvent(input$map1_shape_mouseout, {
         proxy <- leafletProxy(mapId = 'map1')
