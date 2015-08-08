@@ -84,6 +84,13 @@
     town_spd@data$DENSITY <- town_spd@data$POPULATION/town_spd@data$AREA # per municipality
     province_spd@data$DENSITY <- province_spd@data$POPULATION/province_spd@data$Area # per province
     
+    Provinces_town <- sort(unique(town_spd@data$PROVINCE))
+    Provinces_province <- sort(unique(province_spd@data$PROVINCE))
+    if (all.equal(levels(town_spd@data$PROVINCE), levels(Provinces_town)))
+    for (i in 1:9) {
+        levels(town_spd@data$PROVINCE)[i] <- levels(Provinces_province)[i]
+    }
+    
     # return to shape order as at start of script - necessary step if you want to merge 
     # topojson files derived from these same shapefiles with these s-patial p-olygon d-ataframes
     #ward_spd <- arrange(ward_spd, ORDER)

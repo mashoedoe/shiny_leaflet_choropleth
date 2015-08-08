@@ -43,6 +43,43 @@ topoJSON_fillColor <- function(topoJSON_string,last_property,property_length=50,
   return(fixed)
 }
 
+topoJSON_fillColor_plus <- function(topoJSON_string,last_property,property_length=50,
+                               fillColor="#ff3300",fillOpacity=0.7,
+                               weight=1,color="#555555",opacity=1) {
+    
+    last_property_pattern <- paste0(
+        '"',last_property,'":',"[[#][\"][0-9][a-zA-Z][.]]","{0,",property_length,"}[}]"
+    )
+    
+    old_pattern <- as.character(stringr::str_extract_all(string = topoJSON_string, 
+                                                         pattern = last_property_pattern,
+                                                         simplify = TRUE))
+    
+    removed_trailing_curly <- stringr::str_replace(string = old_pattern, 
+                                                   pattern = "[}]", 
+                                                   replacement = "")
+    
+    #replacement_pattern <- paste0(removed_trailing_curly,
+    #                              ',"style":{"fillColor":"',fillColor,
+    #                              '","fillOpacity":',fillOpacity,'}}')
+    
+      replacement_pattern <- paste0(removed_trailing_curly,
+                                    ',"style":{"weight":',weight,',"color":"',color,
+                                    '","opacity":',opacity,',"fillColor":"',fillColor,
+                                    '","fillOpacity":',fillOpacity,'}}')
+    
+    string <- topoJSON_string
+    replacement <- replacement_pattern
+    pattern <- old_pattern
+    vec <- FALSE
+    fixed = stri_replace_all_fixed(string, pattern, replacement, 
+                                   vectorize_all = FALSE, 
+                                   opts_fixed = attr(pattern, "options"))
+    
+    return(fixed)
+}
+
+
 # forfillColor <- town_binpal(as.numeric(topoJSON_property_extract(topoJSON_string = town_tj,
 #                                                       property_name = "DENSITY",
 #                                                       property_length = 50)))

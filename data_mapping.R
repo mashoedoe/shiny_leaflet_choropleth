@@ -3,20 +3,23 @@ library(rgdal)
 library(rgeos)
 library(jsonlite)
 library(readr)
+library(leaflet)
 
 if (all.equal(dir("TopoJSON/"), c("LocalMunicipalities2011.json",
                                   "Province_New_SANeighbours.json",
                                   "Wards2011.json"))) {
-  message("You are in working directory 'jcheng_choropleth3'
+  message("You are in working directory 'shiny_leaflet_choropleth'
           & your topoJSON files are present. CONTINUE...")
 } else {
-  stop("The working directory is NOT 'jcheng_choropleth3' or
+  stop("The working directory is NOT 'shiny_leaflet_choropleth' or
        subdirectory TopoJSON is empty")
 }
 
 ward_tj <- read_lines(file="TopoJSON/Wards2011.json")
 town_tj <- read_lines(file = "TopoJSON/LocalMunicipalities2011.json")
 province_tj <- read_lines(file = "TopoJSON/Province_New_SANeighbours.json")
+province_slice <- province_tj
+town_slice <- town_tj
 
 ward_tj_list <- ward_tj %>% fromJSON(simplifyVector = T)
 town_tj_list <- town_tj %>% fromJSON(simplifyVector = T)
@@ -87,6 +90,16 @@ town_binpal <- colorBin(palette = colorpal, domain=0:max(town_density),
 province_binpal <- colorBin(palette = colorpal, domain=0:max(province_density),
                             bins = densityBreaks, pretty = FALSE, na.color = "white")
 
+ward_tj_no_lines <- topoJSON_fillColor_plus(
+    topoJSON_string = ward_tj,
+    last_property = "DENSITY",
+    fillColor = ward_binpal(ward_density),
+      weight = 2,
+      color = ward_binpal(ward_density),
+      opacity = 0,
+      fillOpacity = 0.7
+)
+
 ward_tj <- topoJSON_fillColor(
   topoJSON_string = ward_tj,
   last_property = "DENSITY",
@@ -116,4 +129,6 @@ province_tj <- topoJSON_fillColor(
 )
 leaflet() %>% 
   setView(lng = 26, lat = -27, zoom = 6) %>% 
-  addTopoJSON(town_tj, weight = 2, color = "#FFFFFF", opacity = 1, dashArray = 3)
+  addTopoJSON(ward_tj_no_lines, weight = 2, color = "#FFFFFF", opacity = 1, dashArray = 3)
+
+save(list = ls(), file = "R/v1.RData")

@@ -5,7 +5,7 @@ if ((stringr::str_sub(getwd(), -24) == "shiny_leaflet_choropleth") == FALSE) {
     message("You appear to be in the right working directory if you want this 
             project to be in 'shiny_leaflet_choropleth' and run further scripts 
             at this location.")
-  }    
+    
     # load libraries  
     library(downloader)
     
