@@ -19,7 +19,7 @@ if (!file.exists("R/v1.RData")) {
     } else {
         load("R/v1.RData")
 }
-
+I
 
 source("R/topoJSON_string_style.R")
 town_density <- topoJSON_property_extract(
@@ -59,7 +59,7 @@ ui <- navbarPage(
                 label=p(h4(strong('Select a level:')),
                         em('At high zoom, Wards'),
                         br(),em('are displayed')),
-                choices=c('Province','Municipality'),
+                choices=c('Province','Municipality','Ward'),
                 selected='Municipality',
                 inline=F
             )
@@ -444,7 +444,7 @@ server <- function(session, input, output) {
 #              )
 #      })
     
-    observeEvent(gis$shp_mouseover_id, {
+    observeEvent(gis$shp_mouseover_id,label="event22", {
         proxy <- leafletProxy(
             "map1", data = subset(
                 gis$shp, 
@@ -471,7 +471,7 @@ server <- function(session, input, output) {
 #             )
 #     })
      
-    observeEvent(input$map1_topojson_mouseover, {
+    observeEvent(input$map1_topojson_mouseover,label="event23", {
         if (input$select_map_level == 'Municipality') {
             proxy <- leafletProxy(
                 "map1", data = subset(
@@ -490,13 +490,13 @@ server <- function(session, input, output) {
         }
     })
     
-    observeEvent(input$map1_topojson_mouseout, {
+    observeEvent(input$map1_topojson_mouseout,label="event24", {
         proxy <- leafletProxy(mapId = 'map1')
         proxy %>%
             clearGroup('single')
     })
     
-    observeEvent(input$map1_topojson_mouseover, {
+    observeEvent(input$map1_topojson_mouseover,label="event25", {
         if (input$select_map_level == 'Province') {
             proxy <- leafletProxy(
                 "map1", data = subset(
