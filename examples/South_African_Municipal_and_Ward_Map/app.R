@@ -17,20 +17,8 @@ if (!file.exists("R/v1.RData")) {
              Can't find TopoJSON or .RData source files")
     }
     } else {
-        load("R/v1.RData")
+        load("R/v2.RData")
 }
-I
-
-source("R/topoJSON_string_style.R")
-town_density <- topoJSON_property_extract(
-    topoJSON_string = town_tj, property_name = "DENSITY"
-)
-ward_density <- topoJSON_property_extract(
-    topoJSON_string = ward_tj, property_name = "DENSITY"
-)
-# province_density <- topoJSON_property_extract(
-#     topoJSON_string = province_tj, property_name = "DENSITY"
-# )
 
 ui <- bootstrapPage(
         title = "South African Demographics",
