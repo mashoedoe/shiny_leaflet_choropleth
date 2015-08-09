@@ -132,3 +132,9 @@ leaflet() %>%
   addTopoJSON(ward_tj_no_lines, weight = 2, color = "#FFFFFF", opacity = 1, dashArray = 3)
 
 save(list = ls(), file = "R/v1.RData")
+
+town_density <- topoJSON_property_extract(
+    topoJSON_string = town_tj, property_name = "DENSITY"
+)
+save(list = c("ward_tj", "ward_binpal", "ward_tj_spd", "town_tj", "town_binpal", "town_tj_spd","town_density"), 
+     file = "R/v2.RData")

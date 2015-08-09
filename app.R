@@ -32,11 +32,6 @@ province_density <- topoJSON_property_extract(
     topoJSON_string = province_tj, property_name = "DENSITY"
 )
 
-#sapply(slot(object = ward_tj_spd, name = "polygons"), function(x) slot(x, "ID"))
-#ward_tj_spd@data$ID
-ward_tj_spd@data$ID[ward_tj_spd@data$PROVINCE == "Northern Cape"]
-
-
 ui <- navbarPage(
     title = "South African Demographics",
     tabPanel(
@@ -59,7 +54,7 @@ ui <- navbarPage(
                 label=p(h4(strong('Select a level:')),
                         em('At high zoom, Wards'),
                         br(),em('are displayed')),
-                choices=c('Province','Municipality','Ward'),
+                choices=c('Province','Municipality'),
                 selected='Municipality',
                 inline=F
             )
@@ -106,9 +101,6 @@ ui <- navbarPage(
             choices=c('Ward','Municipal','Provincial'),
             selected='Municipality'
         ),
-        # A download option for later implimentation:  
-        #  p(class='text-right', downloadButton(outputId='downloadData',
-        #                                         label='Download Data')),
         DT::dataTableOutput(outputId='table')
     )
         )
@@ -308,10 +300,6 @@ server <- function(session, input, output) {
                     topojson=town_tj,stroke=T,dashArray=3,weight=2,color="white",
                     opacity=1,fill=T,smoothFactor = 0.5
                 ) %>%
-#                addTopoJSON(group = 'province_slice',
-#                            topojson=province_slice,stroke=T,dashArray=3,weight=2,color="black",
-#                            opacity=1,fill=F,smoothFactor = 0.5
-#                ) %>% 
                 addLegend(
                     position = "bottomright", 
                     pal = town_binpal,
@@ -338,11 +326,6 @@ server <- function(session, input, output) {
             topojson=town_slice,stroke=F,weight=0,color="white",
             opacity=0,fill=T,fillColor="white",fillOpacity=0,smoothFactor = 1
         )
-#            addPolygons(#layerId = gis$shp@data$ID,
-#                        stroke=T,dashArray=3,weight=2,color="white",
-#                        opacity=1,fill=T,smoothFactor = 0.5, fillOpacity = 0.5,
-#                        fillColor = gis$binpal(gis$shp@data$DENSITY)
-#            ) 
     })
     observe(if(input$select_map_level == 'Ward' | input$select_map_level =='Municipality'){
         label = "ward_proxymap_event"
@@ -432,18 +415,6 @@ server <- function(session, input, output) {
          }
     })
     
-#      observe(if (input$select_map_level == 'Ward' & (!is.null(gis$shp_mouseover_id))) {
-#          proxy <- leafletProxy(
-#              "map1", data = subset(gis$shp, gis$shp@data$ID == gis$shp_mouseover_id)
-#          )
-#          proxy %>%
-#              clearGroup('single') %>%
-#              addPolygons(group = 'single',
-#                  stroke=T,weight=3,color="#555555",opacity=1,
-#                  smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
-#              )
-#      })
-    
     observeEvent(gis$shp_mouseover_id,label="event22", {
         proxy <- leafletProxy(
             "map1", data = subset(
@@ -458,18 +429,6 @@ server <- function(session, input, output) {
                         smoothFactor=1,fill=F
             )
     })
-    
-#     observe(if (input$select_map_level == 'Municipality' & gis$mouse_events == 1) {
-#         proxy <- leafletProxy(
-#            "map1", data = subset(town_tj_spd, town_tj_spd@data$MAP_TITLE == gis$slice2)
-#         )
-#         proxy %>%
-#             clearGroup('single') %>%
-#             addPolygons(group = 'single',
-#                         stroke=T,weight=3,color="#555555",opacity=1,
-#                         smoothFactor=1,fill = F
-#             )
-#     })
      
     observeEvent(input$map1_topojson_mouseover,label="event23", {
         if (input$select_map_level == 'Municipality') {
@@ -512,78 +471,6 @@ server <- function(session, input, output) {
                 )
         }
     })
-    
-#     observe(if (input$select_map_level == 'Province' & gis$mouse_events == 1) {
-#         proxy <- leafletProxy(
-#             "map1", data = subset(province_tj_spd, province_tj_spd@data$PROVINCE == gis$slice1)
-#         )
-#         proxy %>%
-#             clearGroup('single') %>%
-#             addPolygons(group = 'single',
-#                         stroke=T,weight=3,color="#555555",opacity=1,
-#                         smoothFactor=1,fill = T,fillOpacity = 0
-#             )
-#     })
-    
-#    observeEvent(input$map1_topojson_mouseover, {
-#        if (input$select_map_level == 'Province') {
-#            proxy <- isolate(leafletProxy(
-#                "map1", data = subset(
-#                    province_tj_spd,
-#                    province_tj_spd@data$PROVINCE == gis$slice1
-#                    )
-#            ))
-#        } else {
-#            proxy <- leafletProxy(
-#                "map1", data = subset(
-#                    town_tj_spd,
-#                    town_tj_spd@data$MAP_TITLE == gis$slice2
-#                    )
-#            )
-#        }
-#        proxy %>%
-#            clearGroup('single') %>%
-#            addPolygons(group = 'single',
-#                        stroke=T,weight=3,color="#555555",opacity=1,
-#                        smoothFactor=1,fill = F
-#            )
-#    })
-     
-#      observe(if (input$select_map_level == 'Province' & gis$mouse_events == 1) {
-#          proxy <- leafletProxy(
-#              "map1", data = subset(gis$shp@data$PROVINCE == gis$id)
-#          )
-#          proxy %>%
-#              clearGroup('single') %>%
-#              addPolygons(group = 'single',
-#                          stroke=T,weight=3,color="#555555",opacity=1,
-#                          smoothFactor=1,fillColor="#FFFFFF",fillOpacity=0.2
-#              )
-#      })
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     observe({
         if (input$select_data_level=='Ward') {
