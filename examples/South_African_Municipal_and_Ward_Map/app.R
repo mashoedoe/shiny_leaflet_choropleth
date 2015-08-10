@@ -3,7 +3,7 @@ library(shiny)
 library(leaflet)
 library(DT)
 
-if (!file.exists("R/v1.RData")) {
+if (!file.exists("R/v2.RData")) {
     if (all.equal(dir("TopoJSON/"),
                   c("LocalMunicipalities2011.json",
                     "Province_New_SANeighbours.json",
@@ -27,14 +27,14 @@ ui <- bootstrapPage(
                              padding: 8px; opacity: 0.7; border-radius: 6px; 
                              box-shadow: 0 0 15px rgba(0,0,0,0.2); }")),
         
-        leafletOutput(outputId = 'map1', width = "100%", height = "650px"),
+        leafletOutput(outputId = 'map1', width = "100%", height = "730px"),
         absolutePanel(
-            right=25,top=80,width =260, class="floater",
+            right=10,top=80,width =260, class="floater",
             h3("SA Population Density"),
             uiOutput('hoverInfo')
         ),
         absolutePanel(
-            right = 25, top = 330, width = 200, class="floater",
+            right = 10, top = 330, width = 200, class="floater",
             radioButtons( 
                 inputId='select_map_level',
                 label=p(h4(strong('Select a level:')),
@@ -94,9 +94,9 @@ server <- function(session, input, output) {
         gis$mouse_events <- 0
     })
     
-    observe(if (input$select_map_level == 'Ward'){label="event3"
-    gis$tj <- ward_tj_no_lines
-    })
+#    observe(if (input$select_map_level == 'Ward'){label="event3"
+#    gis$tj <- ward_tj_no_lines
+#    })
     observe(if (input$select_map_level == 'Municipality'){
         gis$tj <- town_tj
     })
@@ -373,7 +373,12 @@ server <- function(session, input, output) {
          } else if (input$select_map_level == 'Municipality'){
       return(
             div(
-              strong(gis$id),
+              strong(
+                  sub(
+                      pattern=" Local Municipality| Metropolitan Municipality|Local Municipality of ",
+                      replacement="",
+                      x=gis$id)
+                  ),
               br(),
               span(round(gis$shp@data$DENSITY[gis$shp@data$MAP_TITLE == gis$id],1), HTML("people/km<sup>2</sup>"))
             )
