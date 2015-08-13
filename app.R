@@ -19,18 +19,21 @@ if (!file.exists("R/v1.RData")) {
     } else {
         load("R/v1.RData")
 }
-I
 
-source("R/topoJSON_string_style.R")
-town_density <- topoJSON_property_extract(
-    topoJSON_string = town_tj, property_name = "DENSITY"
-)
-ward_density <- topoJSON_property_extract(
-    topoJSON_string = ward_tj, property_name = "DENSITY"
-)
-province_density <- topoJSON_property_extract(
-    topoJSON_string = province_tj, property_name = "DENSITY"
-)
+#source("R/topoJSON_string_style.R")
+#town_density <- topoJSON_property_extract(
+#    topoJSON_string = town_tj, property_name = "DENSITY"
+#)
+
+#saveRDS(object = town_density, file = "R/town_density")
+town_density <- readRDS(file = "R/town_density")
+
+# ward_density <- topoJSON_property_extract(
+#     topoJSON_string = ward_tj, property_name = "DENSITY"
+# )
+# province_density <- topoJSON_property_extract(
+#     topoJSON_string = province_tj, property_name = "DENSITY"
+# )
 
 ui <- navbarPage(
     title = "South African Demographics",
@@ -126,7 +129,7 @@ server <- function(session, input, output) {
     })
     
     observe(if (input$select_map_level == 'Ward'){label="event3"
-    gis$tj <- ward_tj_no_lines
+    gis$tj <- gis$tj <- town_tj
     })
     observe(if (input$select_map_level == 'Municipality'){
         gis$tj <- town_tj
@@ -296,10 +299,10 @@ server <- function(session, input, output) {
             leaflet() %>%
                 setView(zoom=6,lng=26,lat=-29) %>%
                 addTiles() %>%
-                addTopoJSON(#group = 'town_tj',
-                    topojson=town_tj,stroke=T,dashArray=3,weight=2,color="white",
-                    opacity=1,fill=T,smoothFactor = 0.5
-                ) %>%
+#                addTopoJSON(group = 'town_tj',
+#                    topojson=town_tj,stroke=T,dashArray=3,weight=2,color="white",
+#                    opacity=1,fill=T,smoothFactor = 0.5
+#                ) %>%
                 addLegend(
                     position = "bottomright", 
                     pal = town_binpal,
@@ -310,43 +313,50 @@ server <- function(session, input, output) {
         })
     })
     
-    observe(if(input$select_map_level == 'Province'){
-        label = "province_proxymap_event"
+    observeEvent(input$select_map_level,{#if(input$select_map_level == 'Province'){
+        label = 'proxy_map_event'#"province_proxymap_event"
         proxy <- leafletProxy(
             "map1"#, data =gis$shp
         )
         proxy %>%
             clearShapes() %>%
             clearTopoJSON() %>%
-        addTopoJSON(
-            topojson = gis$tj,stroke=T,dashArray=3,weight=2,color="white",
-            opacity=1,fill=T,smoothFactor = 0.5
-            ) %>%
-        addTopoJSON(group = 'town_slice',
-            topojson=town_slice,stroke=F,weight=0,color="white",
-            opacity=0,fill=T,fillColor="white",fillOpacity=0,smoothFactor = 1
-        )
-    })
-    observe(if(input$select_map_level == 'Ward' | input$select_map_level =='Municipality'){
-        label = "ward_proxymap_event"
-        proxy <- leafletProxy(
-            "map1"#, data =gis$shp
-        )
-        proxy %>%
-            clearShapes() %>%
-            clearTopoJSON() %>%
+#            clearGroup('gis_tj') %>%
+#            clearGroup('gis_shp') %>%
             addTopoJSON(
-                topojson=town_tj,stroke=T,dashArray=3,weight=2,color="white",
+                group = 'gis_tj',
+                stroke=T,dashArray=3,weight=2,color="white", topojson = gis$tj, #topojson = province_tj,
                 opacity=1,fill=T,smoothFactor = 0.5
-            )
+            ) #%>%
+        
+#            addTopoJSON(group = 'town_slice',
+#                topojson=town_slice,stroke=F,weight=0,color="white",
+#                opacity=0,fill=T,fillColor="white",fillOpacity=0,smoothFactor = 1
+#            )
     })
-    observe(if(input$select_map_level == 'Ward'){
+#    observe(if(input$select_map_level == 'Ward' | input$select_map_level =='Municipality'){
+#        label = "ward_proxymap_event"
+#        proxy <- leafletProxy(
+#            "map1"#, data =gis$shp
+#        )
+#        proxy %>%
+#            clearShapes() %>%
+#            clearTopoJSON() %>%
+##            clearGroup('town_slice') %>%
+#            addTopoJSON(
+#                topojson=town_tj,stroke=T,dashArray=3,weight=2,color="white",
+#                opacity=1,fill=T,smoothFactor = 0.5
+#            )
+#    })
+    observe(if(input$select_map_level == 'Ward'){ label="event19b"
         proxy <- leafletProxy(
             "map1", data =gis$shp
         )
         proxy %>%
             clearShapes() %>%
+#            clearGroup('gis_shp') %>%
             addPolygons(
+                group='gis_shp',
                 layerId = gis$shp@data$ID,
                 stroke=T,dashArray=3,weight=2,color="white",
                 opacity=1,fill=T,smoothFactor = 0.5, fillOpacity = 0.5,
@@ -354,9 +364,10 @@ server <- function(session, input, output) {
             ) 
     })
     
+#    observe(if (input$map1_zoom > 8) {
     observeEvent(input$map1_zoom, label="event20",{
-        if ((v$msg3 > 8) & (!is.null(gis$slice1))) {
-            #label="zoom_effect"
+        if (v$msg3 > 8) {#& (!is.null(gis$slice1))) {
+        label="event20"
             updateRadioButtons(
                 session, inputId = "select_map_level", 
                 choices = c('Province', 'Municipality', 'Ward'),
@@ -365,8 +376,10 @@ server <- function(session, input, output) {
         }
     })
     
+#    observe(if (input$map1_zoom <= 8) {
     observeEvent(input$map1_zoom ,label="event21", {
-        if ((v$msg3 <= 8) & (!is.null(gis$slice1))) {
+        if (v$msg3 <= 8) {#& (!is.null(v$msg3gis$slice1))) {
+        label="event21"
             updateRadioButtons(
                 session, inputId = "select_map_level", 
                 choices = c('Province', 'Municipality'),
@@ -424,6 +437,7 @@ server <- function(session, input, output) {
         )
         proxy %>%
             clearGroup('single') %>%
+#            clearGroup('gis_shp') %>%
             addPolygons(group = 'single',
                         stroke=T,weight=3,color="#555555",opacity=1,
                         smoothFactor=1,fill=F
