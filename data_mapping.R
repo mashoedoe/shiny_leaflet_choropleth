@@ -5,15 +5,15 @@ library(jsonlite)
 library(readr)
 library(leaflet)
 
-if (all.equal(dir("TopoJSON/"), c("LocalMunicipalities2011.json",
-                                  "Province_New_SANeighbours.json",
-                                  "Wards2011.json"))) {
+if (all.equal(dir("TopoJSON/"), c(
+    "LocalMunicipalities2011.json","Province_New_SANeighbours.json",
+    "Wards_0.10","Wards_0.20","Wards2011.json"
+    ))) {
   message("You are in working directory 'shiny_leaflet_choropleth'
           & your topoJSON files are present. CONTINUE...")
 } else {
   stop("The working directory is NOT 'shiny_leaflet_choropleth' or
        subdirectory TopoJSON is empty")
-}
 
 ward_tj <- read_lines(file="TopoJSON/Wards2011.json")
 town_tj <- read_lines(file = "TopoJSON/LocalMunicipalities2011.json")
@@ -31,9 +31,9 @@ province_tj_properties <- province_tj_list$objects$Province_New_SANeighbours$geo
 
 #rm(ward_tj_list, town_tj_list, province_tj_list)
 
-ward_tj_properties$ID <- 0:4276
-town_tj_properties$ID <- 0:233
-province_tj_properties$ID <- 0:8
+#ward_tj_properties$ID <- 0:4276
+#town_tj_properties$ID <- 0:233
+#province_tj_properties$ID <- 0:8
 
 ward_tj_spd <- readOGR(ward_tj,layer="Wards2011", verbose=F)
 town_tj_spd <- readOGR(town_tj,layer="LocalMunicipalities2011",verbose=F)
@@ -127,14 +127,108 @@ province_tj <- topoJSON_fillColor(
   #opacity = 0,
   #fillOpacity = 0.7
 )
+
+provinces <- dplyr::select(.data = province_tj_spd@data, ID, PROVINCE)
+provinces <- sapply(X = provinces[,2], FUN = sub, pattern = " |-", replacement = "_")
+
+towns <- dplyr::select(.data = town_tj_spd@data, ID, MAP_TITLE)
+towns <- sapply(X = towns[,2], FUN = gsub, pattern = " |-", replacement = "_")
+# 
+# provincial_wards <- NULL
+# for (i in 1:9) {
+#     provincial_wards[i] <- read_lines(
+#         file=paste0("TopoJSON/Wards_0.10/",
+#                     provinces[i],"_Wards2011.json")
+#     )
+# }
+provincial_wards <- NULL
+for (i in 0:8) {
+    provincial_wards[i+1] <- read_lines(
+        file=paste0("TopoJSON/Wards_0.10/",i,".json")
+    )
+}
+
+town_wards <- NULL
+for (i in 0:233) {
+    town_wards[i+1] <- read_lines(
+        paste0("TopoJSON/Wards_0.20/",i,".json")
+    )
+}
+
+provincial_wards_density <- NULL
+for (i in 0:8) {
+    provincial_wards_density[[i+1]] <- as.numeric(topoJSON_property_extract(
+        topoJSON_string = provincial_wards[i+1], property_name = "DENSITY"
+    ))
+}
+town_wards_density <- NULL
+for (i in 0:233) {
+    town_wards_density[[i+1]] <- as.numeric(topoJSON_property_extract(
+        topoJSON_string = town_wards[i+1], property_name = "DENSITY"
+    ))
+}
+
+for (i in 0:8) {
+    provincial_wards[i+1] <- topoJSON_fillColor(
+        topoJSON_string = provincial_wards[i+1],
+        last_property = "DENSITY",
+        fillColor = ward_binpal(provincial_wards_density[[i+1]])
+    )
+}
+
+for (i in 0:233) {
+    town_wards[i+1] <- topoJSON_fillColor(
+        topoJSON_string = town_wards[i+1],
+        last_property = "DENSITY",
+        fillColor = ward_binpal(town_wards_density[[i+1]])
+    )
+}
+
 leaflet() %>% 
   setView(lng = 26, lat = -27, zoom = 6) %>% 
   addTopoJSON(ward_tj_no_lines, weight = 2, color = "#FFFFFF", opacity = 1, dashArray = 3)
 
+leaflet() %>% addTiles() %>%
+    setView(lng = 26, lat = -27, zoom = 6) %>% 
+    addTopoJSON(provincial_wards[9], weight = 2, color = "#FFFFFF", opacity = 1, dashArray = 3)
+
+leaflet() %>% addTiles() %>%
+    setView(lng = 26, lat = -27, zoom = 6) %>% 
+    addTopoJSON(town_wards[212+1], weight = 2, color = "#FFFFFF", opacity = 1, dashArray = 3)
+
+# saveRDS(object = town_density, file = "R/town_density")
 save(list = ls(), file = "R/v1.RData")
 
-town_density <- topoJSON_property_extract(
-    topoJSON_string = town_tj, property_name = "DENSITY"
+# create v2.RData by removing some v1 objects and renaming to ensure MUNICNAME 
+# refers to the same variable across Municipal and Town levels
+rm(densityRanges, densityBreaks, colorpal, i, midcolor, province_tj_list, 
+   town_tj_list, ward_tj_list, provinces, towns, topoJSON_fillColor, 
+   topoJSON_fillColor_plus, topoJSON_property_extract)
+
+colnames(
+    town_tj_properties
+    )[which(colnames(town_tj_properties) == "MUNICNAME")] <- "MUNIC"
+colnames(
+    town_tj_properties
+)[which(colnames(town_tj_properties) == "MAP_TITLE")] <- "MUNICNAME"
+colnames(
+    town_tj_spd@data
+)[which(colnames(town_tj_spd@data) == "MUNICNAME")] <- "MUNIC"
+colnames(
+    town_tj_spd@data
+)[which(colnames(town_tj_spd@data) == "MAP_TITLE")] <- "MUNICNAME"
+
+
+
+town_slice <- gsub(x = town_slice, pattern = "MUNICNAME", replacement = "MUNIC")
+town_slice <- gsub(x = town_slice, pattern = "MAP_TITLE", replacement = "MUNICNAME")
+town_tj <- gsub(x = town_tj, pattern = "MUNICNAME", replacement = "MUNIC")
+town_tj <- gsub(x = town_tj, pattern = "MAP_TITLE", replacement = "MUNICNAME")
+
+all.equal(
+sort(unique(ward_tj_spd@data$MUNICNAME)),
+sort(town_tj_spd@data$MUNICNAME)
 )
-save(list = c("ward_tj", "ward_binpal", "ward_tj_spd", "town_tj", "town_binpal", "town_tj_spd","town_density"), 
-     file = "R/v2.RData")
+
+save(list = ls(), file = "R/v2.RData")
+}
